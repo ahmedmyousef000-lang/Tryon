@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>✨ Sunglasses Try-On Studio</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 <style>
   body {
     font-family: -apple-system, sans-serif;
@@ -45,7 +45,7 @@
     transform: translateY(-4px) scale(1.05);
   }
   .glasses-card.selected {
-    border-color: #667eea;
+    border-color: #667eea !important;
     box-shadow: 0 10px 30px rgba(102,126,234,0.4);
   }
   .upload-zone {
@@ -62,7 +62,6 @@
 
 <div class="max-w-6xl mx-auto">
   
-  <!-- Header -->
   <div class="text-center mb-8">
     <h1 class="text-4xl md:text-6xl font-black gradient-text mb-3">
       ✨ Sunglasses Try-On
@@ -72,12 +71,11 @@
     </p>
   </div>
 
-  <!-- Upload Section -->
   <div class="glass rounded-3xl p-6 md:p-8 shadow-2xl mb-6">
     <h2 class="text-2xl font-bold mb-4">📸 Step 1: Upload Your Photo</h2>
     <label class="upload-zone rounded-2xl p-8 text-center block cursor-pointer">
       <div class="text-5xl mb-3">📷</div>
-      <p class="font-semibold text-gray-700">Click to upload or drag & drop</p>
+      <p class="font-semibold text-gray-700">Click to upload</p>
       <p class="text-sm text-gray-500 mt-1">Front-facing photo works best</p>
       <input type="file" id="personUpload" accept="image/*" class="hidden">
     </label>
@@ -87,30 +85,26 @@
     </div>
   </div>
 
-  <!-- Glasses Selection -->
   <div id="glassesSection" class="glass rounded-3xl p-6 md:p-8 shadow-2xl mb-6 hidden">
     <h2 class="text-2xl font-bold mb-4">🕶️ Step 2: Choose Sunglasses</h2>
     
-    <!-- Tabs -->
-    <div class="flex gap-2 mb-6 border-b">
+    <div class="flex gap-2 mb-6 border-b overflow-x-auto">
       <button onclick="switchTab('recommended')" id="tab-recommended" 
-              class="px-4 py-2 font-semibold border-b-2 border-purple-600 text-purple-600">
+              class="px-4 py-2 font-semibold border-b-2 border-purple-600 text-purple-600 whitespace-nowrap">
         🤖 AI Recommended
       </button>
       <button onclick="switchTab('all')" id="tab-all" 
-              class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500">
+              class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 whitespace-nowrap">
         👓 All Styles
       </button>
       <button onclick="switchTab('upload')" id="tab-upload" 
-              class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500">
+              class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 whitespace-nowrap">
         📤 Upload Own
       </button>
     </div>
 
-    <!-- Glasses Grid -->
     <div id="glassesGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
 
-    <!-- Upload Own Section -->
     <div id="uploadOwn" class="hidden">
       <label class="upload-zone rounded-2xl p-8 text-center block cursor-pointer">
         <div class="text-5xl mb-3">🕶️</div>
@@ -118,19 +112,13 @@
         <p class="text-sm text-gray-500 mt-1">PNG with transparent background works best</p>
         <input type="file" id="glassesUpload" accept="image/*" class="hidden">
       </label>
-      <div class="mt-4 text-center text-sm text-gray-600">
-        💡 <strong>Tip:</strong> Use PNG sunglasses images for best results. 
-        <a href="https://www.google.com/search?q=sunglasses+png+transparent" target="_blank" 
-           class="text-purple-600 underline">Find some here</a>
-      </div>
     </div>
   </div>
 
-  <!-- Result -->
   <div id="resultSection" class="glass rounded-3xl p-6 md:p-8 shadow-2xl hidden">
     <h2 class="text-3xl font-bold mb-4 text-center gradient-text">🎉 Your Look!</h2>
     <canvas id="resultCanvas" class="max-w-full mx-auto rounded-2xl shadow-lg"></canvas>
-    <div class="flex justify-center gap-3 mt-6">
+    <div class="flex justify-center gap-3 mt-6 flex-wrap">
       <button onclick="downloadResult()" class="btn-primary text-white px-6 py-3 rounded-xl font-bold">
         💾 Download
       </button>
@@ -146,25 +134,39 @@
 </div>
 
 <script>
-// Sunglasses catalog (using free transparent PNGs)
+// SVG-based sunglasses - guaranteed to work!
+function makeGlassesSVG(type, color = "#1a1a1a", lensColor = "#2a2a3e") {
+  const svgs = {
+    wayfarer: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140"><path d="M20,40 L180,30 L200,50 L220,30 L380,40 L370,100 Q360,130 320,130 L240,130 Q210,130 200,100 Q190,130 160,130 L80,130 Q40,130 30,100 Z" fill="${color}"/><ellipse cx="115" cy="80" rx="75" ry="40" fill="${lensColor}" opacity="0.85"/><ellipse cx="285" cy="80" rx="75" ry="40" fill="${lensColor}" opacity="0.85"/></svg>`,
+    aviator: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140"><path d="M180,30 L220,30 M30,40 L180,30 M220,30 L370,40" stroke="${color}" stroke-width="4" fill="none"/><path d="M40,55 Q35,110 110,125 Q190,125 195,60 Q190,40 110,42 Q50,45 40,55 Z" fill="${color}"/><path d="M205,60 Q210,40 290,42 Q360,45 360,55 Q365,110 290,125 Q210,125 205,60 Z" fill="${color}"/><ellipse cx="115" cy="85" rx="70" ry="40" fill="${lensColor}" opacity="0.85"/><ellipse cx="285" cy="85" rx="70" ry="40" fill="${lensColor}" opacity="0.85"/></svg>`,
+    round: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140"><line x1="170" y1="70" x2="230" y2="70" stroke="${color}" stroke-width="5"/><circle cx="110" cy="70" r="60" fill="${color}"/><circle cx="290" cy="70" r="60" fill="${color}"/><circle cx="110" cy="70" r="50" fill="${lensColor}" opacity="0.85"/><circle cx="290" cy="70" r="50" fill="${lensColor}" opacity="0.85"/></svg>`,
+    clubmaster: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140"><path d="M20,40 Q15,55 30,60 L180,55 L200,75 L220,55 L370,60 Q385,55 380,40 L350,30 L220,35 L200,55 L180,35 L50,30 Z" fill="${color}"/><ellipse cx="115" cy="85" rx="75" ry="35" fill="${lensColor}" opacity="0.85" stroke="${color}" stroke-width="2"/><ellipse cx="285" cy="85" rx="75" ry="35" fill="${lensColor}" opacity="0.85" stroke="${color}" stroke-width="2"/></svg>`,
+    sport: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140"><path d="M20,50 Q15,90 50,115 L160,120 Q200,120 200,80 Q200,120 240,120 L350,115 Q385,90 380,50 Q380,30 350,30 L50,30 Q20,30 20,50 Z" fill="${color}"/><path d="M40,55 Q35,95 65,110 L160,112 Q190,112 190,80 Q190,50 160,48 L65,48 Q42,48 40,55 Z" fill="${lensColor}" opacity="0.9"/><path d="M210,80 Q210,50 240,48 L335,48 Q362,48 360,55 Q365,95 335,110 L240,112 Q210,112 210,80 Z" fill="${lensColor}" opacity="0.9"/></svg>`,
+    cateye: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140"><path d="M10,40 Q5,55 25,65 L60,75 Q60,120 130,120 Q200,120 195,75 L200,70 L205,75 Q200,120 270,120 Q340,120 340,75 L375,65 Q395,55 390,40 L355,35 Q310,45 280,50 L220,55 L200,65 L180,55 L120,50 Q90,45 45,35 Z" fill="${color}"/><path d="M65,75 Q65,110 130,110 Q190,110 185,75 Q180,55 130,55 Q75,58 65,75 Z" fill="${lensColor}" opacity="0.85"/><path d="M215,75 Q215,55 270,55 Q335,58 335,75 Q335,110 270,110 Q215,110 215,75 Z" fill="${lensColor}" opacity="0.85"/></svg>`,
+    square: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140"><path d="M20,30 L180,30 L200,50 L220,30 L380,30 L380,120 L220,120 L200,100 L180,120 L20,120 Z" fill="${color}"/><rect x="40" y="50" width="150" height="65" rx="6" fill="${lensColor}" opacity="0.85"/><rect x="210" y="50" width="150" height="65" rx="6" fill="${lensColor}" opacity="0.85"/></svg>`,
+    oversized: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140"><path d="M10,30 Q5,45 15,50 L180,40 L200,60 L220,40 L385,50 Q395,45 390,30 L355,20 L220,30 L200,50 L180,30 L45,20 Z" fill="${color}"/><ellipse cx="110" cy="80" rx="95" ry="50" fill="${color}"/><ellipse cx="290" cy="80" rx="95" ry="50" fill="${color}"/><ellipse cx="110" cy="80" rx="85" ry="42" fill="${lensColor}" opacity="0.85"/><ellipse cx="290" cy="80" rx="85" ry="42" fill="${lensColor}" opacity="0.85"/></svg>`
+  };
+  const svg = svgs[type] || svgs.wayfarer;
+  return "data:image/svg+xml;base64," + btoa(svg);
+}
+
 const SUNGLASSES_CATALOG = [
-  { id: 1, name: "Classic Wayfarer", shape: "wayfarer", goodFor: ["oval","round","heart"], 
-    img: "https://www.pngmart.com/files/22/Sunglass-PNG-Isolated-File.png" },
-  { id: 2, name: "Aviator Gold", shape: "aviator", goodFor: ["square","oval","heart"], 
-    img: "https://www.pngall.com/wp-content/uploads/8/Aviator-Sunglasses-PNG-Image.png" },
-  { id: 3, name: "Round Vintage", shape: "round", goodFor: ["square","oval"], 
-    img: "https://pngimg.com/d/sunglasses_PNG121.png" },
-  { id: 4, name: "Clubmaster", shape: "clubmaster", goodFor: ["oval","round","heart"], 
-    img: "https://www.pngmart.com/files/22/Sunglass-PNG-File.png" },
-  { id: 5, name: "Sports Black", shape: "sport", goodFor: ["oval","round","square"], 
-    img: "https://pngimg.com/d/sunglasses_PNG127.png" },
-  { id: 6, name: "Cat Eye", shape: "cateye", goodFor: ["round","oval","square"], 
-    img: "https://www.pngmart.com/files/13/Cat-Eye-Sunglasses-PNG-Photos.png" },
-  { id: 7, name: "Square Modern", shape: "square", goodFor: ["round","oval","heart"], 
-    img: "https://pngimg.com/d/sunglasses_PNG118.png" },
-  { id: 8, name: "Pilot Style", shape: "aviator", goodFor: ["square","oval"], 
-    img: "https://www.pngmart.com/files/22/Sunglass-PNG-Isolated-Pic.png" },
+  { id: 1, name: "Classic Wayfarer", type: "wayfarer", color: "#1a1a1a", lens: "#2a2a3e", goodFor: ["oval","round","heart"] },
+  { id: 2, name: "Aviator Gold", type: "aviator", color: "#d4a854", lens: "#3a2e1a", goodFor: ["square","oval","heart"] },
+  { id: 3, name: "Round Vintage", type: "round", color: "#3d2817", lens: "#4a3825", goodFor: ["square","oval"] },
+  { id: 4, name: "Clubmaster", type: "clubmaster", color: "#1a1a1a", lens: "#2a2a3e", goodFor: ["oval","round","heart"] },
+  { id: 5, name: "Sports Black", type: "sport", color: "#0a0a0a", lens: "#1a3a5a", goodFor: ["oval","round","square"] },
+  { id: 6, name: "Cat Eye", type: "cateye", color: "#8b2929", lens: "#2a1a1a", goodFor: ["round","oval","square"] },
+  { id: 7, name: "Square Modern", type: "square", color: "#1a1a1a", lens: "#1a2a3e", goodFor: ["round","oval","heart"] },
+  { id: 8, name: "Oversized Chic", type: "oversized", color: "#2a1a3a", lens: "#1a1a2a", goodFor: ["heart","oval","square"] },
+  { id: 9, name: "Tortoise Wayfarer", type: "wayfarer", color: "#6b4423", lens: "#3a2818", goodFor: ["oval","round","heart"] },
+  { id: 10, name: "Silver Aviator", type: "aviator", color: "#a8a8b0", lens: "#1a2a3e", goodFor: ["square","oval","heart"] },
+  { id: 11, name: "Blue Lens Round", type: "round", color: "#1a1a1a", lens: "#1a4a8a", goodFor: ["square","oval"] },
+  { id: 12, name: "Red Cat Eye", type: "cateye", color: "#c41e3a", lens: "#2a1a1a", goodFor: ["round","oval","square"] },
 ];
+
+// Pre-generate all glasses images
+SUNGLASSES_CATALOG.forEach(g => g.img = makeGlassesSVG(g.type, g.color, g.lens));
 
 let personImageData = null;
 let selectedGlasses = null;
@@ -172,24 +174,14 @@ let detectedFaceShape = "oval";
 let faceLandmarks = null;
 let currentTab = "recommended";
 
-// Face shape detection (simplified)
-function detectFaceShape(landmarks, canvas) {
-  const w = canvas.width, h = canvas.height;
-  
-  // Key landmarks
-  const top = landmarks[10];      // forehead
-  const bottom = landmarks[152];  // chin
-  const left = landmarks[234];    // left cheek
-  const right = landmarks[454];   // right cheek
-  const jawLeft = landmarks[172];
-  const jawRight = landmarks[397];
-  const foreheadLeft = landmarks[103];
-  const foreheadRight = landmarks[332];
+function detectFaceShape(landmarks, w, h) {
+  const top = landmarks[10], bottom = landmarks[152];
+  const left = landmarks[234], right = landmarks[454];
+  const jawLeft = landmarks[172], jawRight = landmarks[397];
   
   const faceHeight = (bottom.y - top.y) * h;
   const faceWidth = (right.x - left.x) * w;
   const jawWidth = (jawRight.x - jawLeft.x) * w;
-  const foreheadWidth = (foreheadRight.x - foreheadLeft.x) * w;
   
   const ratio = faceHeight / faceWidth;
   const jawRatio = jawWidth / faceWidth;
@@ -201,30 +193,24 @@ function detectFaceShape(landmarks, canvas) {
   return "oval";
 }
 
-// Get face shape advice
 function getShapeAdvice(shape) {
-  const advice = {
+  return {
     oval: "Lucky you! Almost any style works.",
     round: "Try angular frames like Wayfarer or Square.",
     square: "Soften features with Round or Aviator.",
     heart: "Bottom-heavy frames balance your face.",
     oblong: "Oversized or tall frames work best.",
-  };
-  return advice[shape] || "Great choice of styles below!";
+  }[shape];
 }
 
-// Process person photo
 document.getElementById('personUpload').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  
   const reader = new FileReader();
   reader.onload = async (event) => {
     personImageData = event.target.result;
     document.getElementById('personImg').src = personImageData;
     document.getElementById('personPreview').classList.remove('hidden');
-    
-    // Detect face
     document.getElementById('faceShape').textContent = "🔍 Analyzing your face...";
     await analyzeFace();
     document.getElementById('glassesSection').classList.remove('hidden');
@@ -233,41 +219,36 @@ document.getElementById('personUpload').addEventListener('change', async (e) => 
   reader.readAsDataURL(file);
 });
 
-// Analyze face with MediaPipe
 async function analyzeFace() {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = async () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      
-      const faceMesh = new FaceMesh({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-      });
-      faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true });
-      
-      faceMesh.onResults((results) => {
-        if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-          faceLandmarks = results.multiFaceLandmarks[0];
-          detectedFaceShape = detectFaceShape(faceLandmarks, canvas);
-          document.getElementById('faceShape').innerHTML = 
-            `Face Shape: <span class="capitalize">${detectedFaceShape}</span> — ${getShapeAdvice(detectedFaceShape)}`;
-        } else {
-          document.getElementById('faceShape').textContent = "⚠️ No face detected. Try a clearer photo.";
-        }
+      try {
+        const faceMesh = new FaceMesh({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        });
+        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true });
+        faceMesh.onResults((results) => {
+          if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+            faceLandmarks = results.multiFaceLandmarks[0];
+            detectedFaceShape = detectFaceShape(faceLandmarks, img.width, img.height);
+            document.getElementById('faceShape').innerHTML = 
+              `Face Shape: <span class="capitalize">${detectedFaceShape}</span> — ${getShapeAdvice(detectedFaceShape)}`;
+          } else {
+            document.getElementById('faceShape').textContent = "⚠️ No face detected. Try a clearer photo.";
+          }
+          resolve();
+        });
+        await faceMesh.send({ image: img });
+      } catch (err) {
+        document.getElementById('faceShape').textContent = "Face detection unavailable. You can still try glasses!";
         resolve();
-      });
-      
-      await faceMesh.send({ image: img });
+      }
     };
     img.src = personImageData;
   });
 }
 
-// Switch tabs
 function switchTab(tab) {
   currentTab = tab;
   ['recommended','all','upload'].forEach(t => {
@@ -280,7 +261,6 @@ function switchTab(tab) {
       el.classList.add('border-transparent','text-gray-500');
     }
   });
-  
   if (tab === 'upload') {
     document.getElementById('glassesGrid').classList.add('hidden');
     document.getElementById('uploadOwn').classList.remove('hidden');
@@ -291,21 +271,19 @@ function switchTab(tab) {
   }
 }
 
-// Render glasses grid
 function renderGlasses() {
   const grid = document.getElementById('glassesGrid');
   let list = SUNGLASSES_CATALOG;
-  
   if (currentTab === 'recommended') {
     list = SUNGLASSES_CATALOG.filter(g => g.goodFor.includes(detectedFaceShape));
     if (list.length === 0) list = SUNGLASSES_CATALOG;
   }
-  
   grid.innerHTML = list.map(g => `
     <div class="glasses-card bg-white rounded-2xl p-4 border-2 border-transparent shadow-md" 
          onclick="selectGlasses(${g.id})" id="card-${g.id}">
-      <img src="${g.img}" alt="${g.name}" class="w-full h-24 object-contain mb-2" 
-           crossorigin="anonymous">
+      <div class="bg-gray-50 rounded-lg p-2 mb-2">
+        <img src="${g.img}" alt="${g.name}" class="w-full h-20 object-contain">
+      </div>
       <p class="text-center text-sm font-semibold">${g.name}</p>
       ${g.goodFor.includes(detectedFaceShape) ? 
         '<p class="text-center text-xs text-green-600 mt-1">✓ Perfect for you</p>' : ''}
@@ -313,7 +291,6 @@ function renderGlasses() {
   `).join('');
 }
 
-// Handle custom glasses upload
 document.getElementById('glassesUpload').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -325,7 +302,6 @@ document.getElementById('glassesUpload').addEventListener('change', (e) => {
   reader.readAsDataURL(file);
 });
 
-// Select glasses
 function selectGlasses(id) {
   const g = SUNGLASSES_CATALOG.find(x => x.id === id);
   selectedGlasses = g;
@@ -334,24 +310,24 @@ function selectGlasses(id) {
   applyGlasses();
 }
 
-// Apply glasses to face
 async function applyGlasses() {
-  if (!personImageData || !selectedGlasses || !faceLandmarks) {
+  if (!personImageData || !selectedGlasses) {
     alert("Please upload a photo first!");
+    return;
+  }
+  if (!faceLandmarks) {
+    alert("Face not detected. Please upload a clearer front-facing photo.");
     return;
   }
   
   const canvas = document.getElementById('resultCanvas');
   const ctx = canvas.getContext('2d');
-  
   const person = new Image();
-  person.crossOrigin = "anonymous";
-  person.onload = async () => {
+  person.onload = () => {
     canvas.width = person.naturalWidth;
     canvas.height = person.naturalHeight;
     ctx.drawImage(person, 0, 0);
     
-    // Get eye positions
     const leftEye = faceLandmarks[33];
     const rightEye = faceLandmarks[263];
     const x1 = leftEye.x * canvas.width;
@@ -362,9 +338,7 @@ async function applyGlasses() {
     const eyeWidth = Math.hypot(x2 - x1, y2 - y1);
     const angle = Math.atan2(y2 - y1, x2 - x1);
     
-    // Load glasses
     const glasses = new Image();
-    glasses.crossOrigin = "anonymous";
     glasses.onload = () => {
       const gWidth = eyeWidth * 2.3;
       const gHeight = (glasses.naturalHeight / glasses.naturalWidth) * gWidth;
@@ -380,15 +354,12 @@ async function applyGlasses() {
       document.getElementById('resultSection').classList.remove('hidden');
       document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
     };
-    glasses.onerror = () => {
-      alert("Couldn't load glasses image. Try another one or upload your own.");
-    };
+    glasses.onerror = () => alert("Couldn't load glasses image.");
     glasses.src = selectedGlasses.img;
   };
   person.src = personImageData;
 }
 
-// Download result
 function downloadResult() {
   const canvas = document.getElementById('resultCanvas');
   const link = document.createElement('a');
@@ -397,7 +368,6 @@ function downloadResult() {
   link.click();
 }
 
-// Reset
 function resetAll() {
   personImageData = null;
   selectedGlasses = null;
@@ -411,4 +381,4 @@ function resetAll() {
 </script>
 
 </body>
-</html>
+  </html>
